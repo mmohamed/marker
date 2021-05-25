@@ -1,38 +1,72 @@
-.App {
-  text-align: center;
+
+html,
+body,
+#root {
+	height: 100%;
+	padding: 0;
+	margin: 0;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+#root {
+  background-color: rgb(60, 60, 60);
+  background-size: 50px 50px;
+  background-image: linear-gradient(0deg, transparent 24%, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.05) 26%, transparent 27%, transparent 74%, rgba(255, 255, 255, 0.05) 75%, rgba(255, 255, 255, 0.05) 76%, transparent 77%, transparent), linear-gradient(90deg, transparent 24%, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.05) 26%, transparent 27%, transparent 74%, rgba(255, 255, 255, 0.05) 75%, rgba(255, 255, 255, 0.05) 76%, transparent 77%, transparent);
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.panel {
+  float: right;
+  height: 100%;
+  width: 350px;
+  padding: 25px;
+  background-color: white;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
+.point {
+  background: red;
+  line-height: 20px;
+  border: 1px solid gray;
+  font-weight: bold;
+  border-radius: 50%;  
+  width: 24px;
+  height: 24px;
+  float: left;
+  cursor: move;
   color: white;
+  text-align: center;
+  animation-name: stretch;
+  animation-duration: 1.5s; 
+  animation-timing-function: ease-out; 
+  animation-delay: 0;
+  animation-direction: alternate;
+  animation-iteration-count: infinite;
+  animation-fill-mode: none;
+  animation-play-state: running;
 }
 
-.App-link {
-  color: #61dafb;
+@keyframes stretch {
+  0% {
+    background-color: red;
+  }
+  50% {
+    background-color: orange;
+    color: gray;
+  }
+  100% {
+    background-color: yellow;
+    color: black;
+  }
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.selected {
+  background: #999;
+  animation-play-state: paused;
+}
+
+.container {
+  height: 100%;
+  float: left;
+  background-size: contain;
+  background-repeat: no-repeat;
+  margin: 0px !important;
+  padding: 0px !important;
 }
