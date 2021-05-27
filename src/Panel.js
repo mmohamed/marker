@@ -1,6 +1,8 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { confirmAlert } from 'react-confirm-alert';
+import 'react-confirm-alert/src/react-confirm-alert.css';
 import React from 'react';
-import { Form, Button, Row, Col, InputGroup  } from 'react-bootstrap';
+import { Form, Button, Row, Col, InputGroup, Tabs, Tab } from 'react-bootstrap';
 
 class Panel extends React.Component {
 
@@ -12,7 +14,10 @@ class Panel extends React.Component {
             title: '', 
             logo: '',
             content: '',
-            background: ''
+            links: [{label: '', url: ''}, {label: '', url: ''}, {label: '', url: ''}],
+            background: '',            
+            canUndo: false,
+            canRedo: false
         };
 
         this.handleNewPoint = this.handleNewPoint.bind(this);
@@ -20,42 +25,96 @@ class Panel extends React.Component {
         this.handleSelectPoint = this.handleSelectPoint.bind(this);
         this.handleInputChange = this.handleInputChange.bind(this);
         this.handleClear = this.handleClear.bind(this);
+        this.handleConfirmClear = this.handleConfirmClear.bind(this);
+    }
+
+    setCanUndo = (status) => {
+        this.setState({canUndo: status});
+    }
+
+    setCanRedo = (status) => {
+        this.setState({canRedo: status});
     }
     
-    handleInputChange(event) {
-        const target = event.target;
-        const value = target.type === 'checkbox' ? target.checked : target.value;
-        const name = target.name;
+    handleInputChange = (event) => {       
+        let target = event.target;
+        let value = target.type === 'checkbox' ? target.checked : target.value;
+        let name = target.name;
+        var regex = new RegExp('link\\[([0-9]+)\\]\\.(\\w+)', 'gm');
+        var result = regex.exec(name);
+        if(result != null){
+            let originalValue = value;
+            value = this.state.links.concat([]);
+            value[result[1]][result[2]] = originalValue;   
+            name = 'links';         
+        }
         this.setState({
           [name]: value
         }, () => {
             this.props.savePoint(this.state);
-        });
-        
+        });        
     }
 
-    handleNewPoint(event) {
+    handleNewPoint = (event) => {
         event.preventDefault();
         this.props.addPoint();        
     }
 
-    handleDeletePoint(event) {
+    handleDeletePoint = (event) => {
         event.preventDefault();
         this.props.deletePoint();        
     }
 
-    handleClear(event) {
-        event.preventDefault();
-        this.props.clear();        
+    handleClear = (event) => {
+        confirmAlert({
+            customUI: ({ onClose }) => {
+                return (
+                    <div className='custom-ui'>
+                        <h1>Are you sure?</h1>
+                        <p>You want to delete all points and background ?</p>
+                        <button onClick={onClose}>No</button>
+                        <button
+                        onClick={() => {
+                            this.handleConfirmClear();
+                            onClose();
+                        }}
+                        >
+                        Yes, Delete it!
+                        </button>
+                    </div>
+                );
+            }
+        });               
     }
 
-    handleSelectPoint(pointData) {
+    handleConfirmClear = () => {
+        this.props.clear(); 
+    }
+
+    handleSelectPoint = (pointData) => {
         this.setState({
             id: pointData ? pointData.id : '', 
             title: pointData ? pointData.title : '', 
             logo: pointData ? pointData.logo : '',
-            content: pointData ? pointData.content : ''
+            content: pointData ? pointData.content : '',
+            links: pointData && pointData.links.length > 0 ? pointData.links : [{label: '', url: ''}, {label: '', url: ''}, {label: '', url: ''}]
         });
+    }
+
+    handleExport = () => {
+        alert('export');
+    }
+
+    handleUndo = () => {
+        if(this.state.canUndo){
+            this.props.undo();
+        }        
+    }
+
+    handleRedo = () => {
+        if(this.state.canRedo){
+            this.props.redo();
+        }
     }
 
     handleBackgroundLoading = async (event) => {
@@ -86,9 +145,24 @@ class Panel extends React.Component {
                 </Form>
                 <hr/>
                 
-                <Button variant="primary" type="button" onClick={this.handleNewPoint}>New point</Button>
-                <Button variant="warning" type="button" onClick={this.handleDeletePoint}>Delete point</Button>                
-                <Button variant="danger" type="button" onClick={this.handleClear}>Clear all</Button> 
+                <Form>
+                    <Form.Row>
+                        <Col><Button disabled={!this.state.canUndo} variant="outline-light" block size="sm" onClick={this.handleUndo}><i className="fa fa-undo"></i> Undo</Button></Col>
+                        <Col><Button disabled={!this.state.canRedo} variant="outline-light" block size="sm" onClick={this.handleRedo}><i className="fa fa-rotate-right"></i> Redo</Button></Col>
+                    </Form.Row>
+                    <hr/>
+                    <Form.Row style={{marginBottom: 5}}>
+                        <Col><Button variant="primary" block size="sm" onClick={this.handleNewPoint}><i className="fa fa-plus-square"></i> New point</Button></Col>
+                        <Col><Button variant="warning" block size="sm" onClick={this.handleDeletePoint}><i className="fa fa-minus-square"></i> Delete point</Button></Col>
+                    </Form.Row>
+                    <Form.Row>
+                    </Form.Row>
+                    <Form.Row>
+                        <Col><Button variant="danger" block size="sm" onClick={this.handleClear}><i className="fa fa-trash"></i> Clear all</Button></Col>
+                        <Col><Button variant="success" block size="sm" onClick={this.handleExport}><i className="fa fa-share-square"></i> export</Button></Col>
+                    </Form.Row>
+                </Form>
+                
                 <hr/>
 
                 <Form>
@@ -108,9 +182,6 @@ class Panel extends React.Component {
                         <Form.Label column sm="2">Title</Form.Label>
                         <Col sm="10">
                             <Form.Control type="text" placeholder="Title" name="title" value={this.state.title} onChange={this.handleInputChange}/>
-                            <Form.Text className="text-muted">
-                                We'll never share your email with anyone else.
-                            </Form.Text>
                         </Col>
                     </Form.Group>
 
@@ -118,7 +189,7 @@ class Panel extends React.Component {
                         <Form.Label column sm="2">Logo</Form.Label>
                         <Col sm="10">
                             <Form.Control type="text" placeholder="Logo" name="logo" value={this.state.logo} onChange={this.handleInputChange}/>
-                            <Form.Text className="text-muted">
+                            <Form.Text>
                                 Logo public path or base64.
                             </Form.Text>
                         </Col>
@@ -126,12 +197,23 @@ class Panel extends React.Component {
                     
                     <Form.Group controlId="content">
                         <Form.Label>Content</Form.Label>
-                        <Form.Control as="textarea" rows={3} name="content" onChange={this.handleInputChange} />
+                        <Form.Control as="textarea" rows={3} name="content" value={this.state.content} onChange={this.handleInputChange} />
                     </Form.Group>
-
-                    <Form.Group controlId="formBasicCheckbox">
-                        <Form.Check type="checkbox" label="Check me out" onChange={this.handleInputChange} />
-                    </Form.Group>                    
+                    
+                    <Tabs defaultActiveKey="Link#1" variant="pills">                        
+                        {this.state.links.map((link, i) => {
+                            return (
+                                <Tab key={i} style={{marginTop: 10}} eventKey={"Link#"+ (i+1)} title={"Link #" + (i+1) }>
+                                    <Form.Group controlId={"link["+ i +"]#label"}>
+                                        <Form.Control type="text" placeholder="Link text" name={"link["+ i + "].label"} value={link.label} onChange={this.handleInputChange}/>
+                                    </Form.Group>
+                                    <Form.Group controlId={"link["+ i +"]#url"}>
+                                        <Form.Control type="text" placeholder="Link URL" name={"link["+ i + "].url"} value={link.url} onChange={this.handleInputChange}/>
+                                    </Form.Group>
+                                </Tab>
+                            )
+                        })}
+                    </Tabs>                   
                 </Form>
 
             </>

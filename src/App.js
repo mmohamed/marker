@@ -6,11 +6,11 @@ import React from 'react';
 
 class PointData {
   constructor(id, title, content, logo, links, x, y, isSelected){
-      this.id = id;
+      this.id = id || '';
       this.title = title || '';
       this.content = content || '';
-      this.logo = logo;
-      this.links = links || [];
+      this.logo = logo || '';
+      this.links = links || [{label: '', url: ''}, {label: '', url: ''}, {label: '', url: ''}];
       this.x = x || 0;
       this.y = y || 0;
       this.isSelected = isSelected || false;
@@ -27,11 +27,14 @@ class App extends React.Component {
       ai: 1,
       current: null,
       background: '',
-      error: null
+      error: null,
+      canUndo: false,
+      canRedo: false
     };
 
-    this.histories = [];
-    this.panel = React.createRef();
+    this.histories = [{points: [], ai: 1, current: null, background: ''}];
+    this.historiesIndex = 0;
+    this.panel = React.createRef();  
   }
 
   componentDidMount() {
@@ -46,25 +49,84 @@ class App extends React.Component {
     }
     if(restore){
       this.setState(restore, () => {
-        this.panel.current.handleSelectPoint(this.state.current);
+        this.historiesIndex = this.histories.length-1;
+        this.panel.current.handleSelectPoint(this.getPointById(this.state.current));
+        this.updateUndoRedoAbility();
       });
-    }    
+    }      
   }
 
-  addHistory = () => {
-    this.histories.push({points: this.state.points, ai: this.state.ai, current: this.state.current});
+  undo = () => {
+    if(this.historiesIndex === 0){
+      return;
+    }    
+    this.historiesIndex = this.historiesIndex - 1;
+    // clear for deleteing point and recreating 
+    this.setState({points: []}, () => {
+      let selectedHitory = this.histories[this.historiesIndex];
+      let newState = { points: JSON.parse(JSON.stringify(selectedHitory.points)), 
+        ai: selectedHitory.ai, 
+        current: selectedHitory.current };
+      this.setState(newState, () => {
+        this.panel.current.handleSelectPoint(this.getPointById(this.state.current));
+        this.updateUndoRedoAbility();
+      });
+    });
+  }
+
+  redo = () => {
+    if(this.historiesIndex === this.histories.length){
+      return;
+    }
+    this.historiesIndex = this.historiesIndex + 1;
+    // clear for deleteing point and recreating 
+    this.setState({points: []}, () => {
+      let selectedHitory = this.histories[this.historiesIndex];
+      let newState = { points: JSON.parse(JSON.stringify(selectedHitory.points)), 
+        ai: selectedHitory.ai, 
+        current: selectedHitory.current };
+      this.setState(newState, () => {
+        this.panel.current.handleSelectPoint(this.getPointById(this.state.current));
+        this.updateUndoRedoAbility();
+      });
+    });
+  }
+
+  addHistory = () => {    
+    // not on top histories
+    if(this.historiesIndex !== this.histories.length-1){ 
+      let historiesCopy = [];  
+      for(let idx = 0; idx < this.historiesIndex+1; idx++){
+        historiesCopy.push(JSON.parse(JSON.stringify(this.histories[idx])));
+      }
+      this.histories = historiesCopy;      
+    }    
+    // copy points
+    let points = JSON.parse(JSON.stringify(this.state.points));  
+    this.histories.push({points: points, ai: this.state.ai, current: this.state.current});
+    this.historiesIndex = this.histories.length-1;    
+    this.updateUndoRedoAbility();
     try{
       localStorage.setItem('history', JSON.stringify(this.histories));    
       localStorage.setItem('history-background', this.state.background);
     }catch (error){
       this.setToastMessage("Background is over size, please use one less 2Mb !");
-    }    
+    }  
   }
 
   clearHistory = () => {
-    this.histories = [];
+    this.histories = [{points: [], ai: 1, current: null, background: ''}];
+    this.historiesIndex = 0;
+    this.updateUndoRedoAbility();
     localStorage.removeItem('history');
     localStorage.removeItem('history-background');
+  }
+
+  updateUndoRedoAbility = () => {    
+    this.setState({canUndo : this.historiesIndex > 0, canRedo: this.historiesIndex < this.histories.length-1}, () => {
+      this.panel.current.setCanUndo(this.historiesIndex > 0);
+      this.panel.current.setCanRedo(this.historiesIndex < this.histories.length-1);
+    });
   }
 
   clear = () => {
@@ -87,7 +149,7 @@ class App extends React.Component {
       for(let idx in points){
         points[idx].isSelected = points[idx].id === id;
         if(points[idx].isSelected){
-          current = points[idx];
+          current = this.getPointById(points[idx].id);
         }
       }
       // load data into panel
@@ -95,16 +157,29 @@ class App extends React.Component {
       return {
         points: points,
         ai: state.ai,
-        current: current
+        current: current.id
       };
     }, this.addHistory);
   }
 
+  getPointById = (id) => {
+    for(let idx in this.state.points){
+      if(this.state.points[idx].id === id){
+        return this.state.points[idx];
+      }
+    }
+    return null;
+  }
+
   onMove = (id, x, y) => {
+    let point = this.getPointById(id); 
+    if(point && point.x === x && point.y === y){
+      return;
+    }
     this.setState( state => {
       let points = state.points.concat([]);     
       for(let idx in points){
-        if(points[idx].id === id){
+        if(points[idx].id === id){         
           points[idx].x = x;
           points[idx].y = y;
         }
@@ -117,8 +192,8 @@ class App extends React.Component {
 
   addPoint = () => {
     this.setState( state => {
-      const points = state.points.concat(new PointData(state.ai));
-      const ai = state.ai+1;
+      let points = state.points.concat(new PointData(state.ai));
+      let ai = state.ai+1;
       return {
         points: points,
         ai: ai
@@ -132,7 +207,7 @@ class App extends React.Component {
       for(let idx in points){
         if(points[idx].isSelected){
           points.splice(idx, 1);
-          this.panel.current.handleSelectPoint(null);
+          this.panel.current.handleSelectPoint(new PointData());
           break;
         }
       }
@@ -156,6 +231,7 @@ class App extends React.Component {
           points[idx].title = newData.title;
           points[idx].content = newData.content;
           points[idx].logo = newData.logo;
+          points[idx].links = newData.links;
         }
       }
       return {
@@ -188,7 +264,15 @@ class App extends React.Component {
         </div>
          
         <div className="panel">
-          <Panel addPoint={this.addPoint} savePoint={this.savePoint} deletePoint={this.deletePoint} clear={this.clear} updateBackground={this.updateBackground} ref={this.panel} />  
+          <Panel 
+            addPoint={this.addPoint} 
+            savePoint={this.savePoint} 
+            deletePoint={this.deletePoint} 
+            clear={this.clear} 
+            updateBackground={this.updateBackground} 
+            undo={this.undo}
+            redo={this.redo}
+          ref={this.panel} />  
         </div>        
       </>
     )
