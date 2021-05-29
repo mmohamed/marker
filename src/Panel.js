@@ -159,7 +159,7 @@ class Panel extends React.Component {
                     </Form.Row>
                     <Form.Row>
                         <Col><Button variant="danger" block size="sm" onClick={this.handleClear}><i className="fa fa-trash"></i> Clear all</Button></Col>
-                        <Col><Button variant="success" block size="sm" onClick={this.handleExport}><i className="fa fa-share-square"></i> export</Button></Col>
+                        <Col><Button variant="success" block size="sm" onClick={this.handleExport}><i className="fa fa-share-square"></i> Export</Button></Col>
                     </Form.Row>
                 </Form>
                 

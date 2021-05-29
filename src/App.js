@@ -37,6 +37,22 @@ class App extends React.Component {
     this.panel = React.createRef();  
   }
 
+  UNDO_KEY = 90;
+  REDO_KEY = 89;
+
+  handleKeyDown = (event) => {    
+    switch(event.keyCode) {
+        case this.UNDO_KEY:   
+          this.undo();           
+          break;
+        case this.REDO_KEY:              
+          this.redo();
+          break;
+        default: 
+          break;
+    }
+  }
+
   componentDidMount() {
     let saved = localStorage.getItem('history');
     if(saved){
@@ -53,7 +69,12 @@ class App extends React.Component {
         this.panel.current.handleSelectPoint(this.getPointById(this.state.current));
         this.updateUndoRedoAbility();
       });
-    }      
+    }        
+    document.addEventListener('keydown', this.handleKeyDown);
+  }
+
+  componentWillUnmount() {
+    document.removeEventListener('keydown', this.handleKeyDown);
   }
 
   undo = () => {
@@ -75,7 +96,7 @@ class App extends React.Component {
   }
 
   redo = () => {
-    if(this.historiesIndex === this.histories.length){
+    if(this.historiesIndex === this.histories.length-1){
       return;
     }
     this.historiesIndex = this.historiesIndex + 1;
