@@ -3,6 +3,7 @@ import Panel from './Panel'
 import Point from './Point'
 import { Toast  } from 'react-bootstrap';
 import React from 'react';
+import { Container, Col, Row } from 'react-bootstrap';
 
 class PointData {
   constructor(id, title, content, logo, links, x, y, isSelected){
@@ -75,6 +76,18 @@ class App extends React.Component {
 
   componentWillUnmount() {
     document.removeEventListener('keydown', this.handleKeyDown);
+  }
+
+  get = () => {
+    return {ai: this.state.ai, background: this.state.background, points: this.state.points, current: this.state.current}
+  }
+
+  load = (background , ai , points) => {
+    this.clear(() => {
+      this.setState({
+        ai: ai, points: points, current: '', background: background
+      }, this.addHistory);
+    });      
   }
 
   undo = () => {
@@ -150,7 +163,7 @@ class App extends React.Component {
     });
   }
 
-  clear = () => {
+  clear = (callback) => {
     this.setState({
       points: [], 
       ai: 1,
@@ -160,6 +173,9 @@ class App extends React.Component {
     }, () => {
       this.clearHistory();
       this.panel.current.handleSelectPoint(new PointData());
+      if(callback && typeof callback === 'function'){
+        callback();
+      }
     });   
   }
 
@@ -268,8 +284,8 @@ class App extends React.Component {
 
   render() {
     return (
-      <>
-        <Toast style={{position: 'absolute', bottom: '30px', left: '30px'}}  onClose={() => this.setToastMessage(null)} show={this.state.error != null} delay={10000} autohide>
+      <>      
+        <Toast style={{position: 'absolute', bottom: '30px', left: '30px', zIndex: '999'}}  onClose={() => this.setToastMessage(null)} show={this.state.error != null} delay={10000} autohide>
           <Toast.Header>
             <img src="holder.js/20x20?text=%20" className="rounded mr-2" alt=""/>
             <strong className="mr-auto">Alert</strong>
@@ -278,23 +294,33 @@ class App extends React.Component {
           <Toast.Body>{this.state.error}</Toast.Body>
         </Toast>
 
-        <div id="container" className="container" style={{ backgroundImage: this.state.background }}>             
-          {this.state.points.map(item => (
-            <Point id={item.id} key={item.id} isSelected={item.isSelected} onClick={this.onClick} data={item} onMove={this.onMove} />
-          ))}                      
-        </div>
-         
-        <div className="panel">
-          <Panel 
-            addPoint={this.addPoint} 
-            savePoint={this.savePoint} 
-            deletePoint={this.deletePoint} 
-            clear={this.clear} 
-            updateBackground={this.updateBackground} 
-            undo={this.undo}
-            redo={this.redo}
-          ref={this.panel} />  
-        </div>        
+        <Container fluid style={{height: '100%'}}>
+
+          <Row style={{height: '100%'}}>
+            <Col md={9} className='editor'>
+              <div id="container" className="container" style={{ backgroundImage: this.state.background }}>             
+                {this.state.points.map(item => (
+                  <Point id={item.id} key={item.id} isSelected={item.isSelected} onClick={this.onClick} data={item} onMove={this.onMove} />
+                ))}                      
+              </div>
+            </Col>
+
+            <Col md={3} className='panel'>      
+              <Panel 
+                addPoint={this.addPoint} 
+                savePoint={this.savePoint} 
+                deletePoint={this.deletePoint} 
+                clear={this.clear} 
+                updateBackground={this.updateBackground} 
+                load={this.load}
+                undo={this.undo}
+                redo={this.redo}
+                get={this.get}
+                onError={this.setToastMessage}
+              ref={this.panel} />            
+            </Col>
+          </Row>        
+        </Container>
       </>
     )
   }
