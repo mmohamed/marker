@@ -15,8 +15,10 @@
     "react-confirm-alert": "^2.7.0",
     "react-dom": "^17.0.2",
     "react-draggable": "^4.4.3",
+    "react-router-dom": "^5.2.0",
     "react-scripts": "4.0.3",
     "react-time-ago": "^6.2.2",
+    "typescript": "^4.3.2",
     "web-vitals": "^1.1.2"
   },
   "scripts": {

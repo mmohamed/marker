@@ -63,6 +63,10 @@ body,
   animation-play-state: running;
 }
 
+.point.view {
+  cursor: pointer;
+}
+
 @keyframes stretch {
   0% {
     background-color: red;
@@ -82,12 +86,20 @@ body,
   animation-play-state: paused;
 }
 
-.container {
+#container {
   height: 100%;
   float: left;
   background-size: contain;
   background-repeat: no-repeat;
   margin: 0px !important;
+  padding: 0px !important;
+}
+
+#container-view {
+  height: 100%;
+  background-size: contain;
+  background-repeat: no-repeat;
+  margin: 120px auto !important;
   padding: 0px !important;
 }
 

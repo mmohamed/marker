@@ -26,7 +26,11 @@ class User extends Component {
     }
 
     componentDidMount() {
-        const keycloak = Keycloak('/keycloak.json');
+        const keycloak = Keycloak({
+            url: process.env.REACT_APP_KEYCLOAK_URL,
+            realm: process.env.REACT_APP_KEYCLOAK_REALM,
+            clientId: process.env.REACT_APP_KEYCLOAK_APP
+        });
 
         keycloak.init({onLoad: 'login-required'}).then(authenticated => {
             this.setState({ keycloak: keycloak, authenticated: authenticated });
@@ -43,17 +47,14 @@ class User extends Component {
 
     getToken() {
         if(!this.state.keycloak.isTokenExpired()){
-            console.debug('Token not expired');
             return this.state.keycloak.token;
         }
         let kc = this.state.keycloak;
         let that = this;
         return kc.updateToken(30).then(function(){
             that.setState({keycloak : kc});
-            console.debug('Toekn refreshed !!');
             return kc.token;
         }).catch(function(e) {
-            console.debug(e);
             return null;
         });
     }

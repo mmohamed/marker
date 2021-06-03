@@ -1,7 +1,9 @@
 import React from 'react';
 import Draggable from 'react-draggable';
 import classNames from "classnames";
-import { Popover, OverlayTrigger, Image } from 'react-bootstrap';
+import { OverlayTrigger } from 'react-bootstrap';
+import Tooltip from './Tooltip';
+import PropTypes from 'prop-types';
 
 class Point extends React.Component {
 
@@ -14,7 +16,7 @@ class Point extends React.Component {
             data: props.data,
             show: false
         };
-
+        
         this.handleClick = this.handleClick.bind(this);
         this.handleDrop = this.handleDrop.bind(this);
         this.handleMove = this.handleMove.bind(this);
@@ -51,37 +53,47 @@ class Point extends React.Component {
     }
 
     render(){
-        let popover = (
-        <Popover>
-            <Popover.Title as="h3">{this.state.data.title ? this.state.data.title : 'No title for #'+this.state.data.id}</Popover.Title>
-            <Popover.Content>
-                {this.state.data.logo !== '' && 
-                    <div>
-                        <Image style={{mawWidth: 180, maxHeight: 180}} src={this.state.data.logo} fluid />
-                    </div>
-                }  
-                <hr/>
-                {this.state.data.content ? this.state.data.content : 'No content for #'+this.state.data.id}
-                <hr/>
-                <ul>
-                {this.state.data.links.map((link, i) => {
-                    if(link.url !== '' && link.label !== ''){
-                        return (<li id={"link-view" + i}><a rel="noreferrer" target="_blank" href={link.url}>{link.label}</a></li>)
-                    }
-                    return '';
-                })}
-                </ul>
-            </Popover.Content>
-        </Popover>
+        let popover = (<Tooltip                 
+                id={this.state.data.id}
+                title={this.state.data.title}
+                logo={this.state.data.logo}
+                content={this.state.data.content}
+                links={this.state.data.links}
+            />       
         );
         return(                      
             <Draggable bounds="parent" onStop={this.handleDrop} onStart={this.handleMove} position={{x: this.state.x, y: this.state.y}}>                 
-                <div onMouseEnter={this.handleOnMouseEnter} onMouseLeave={this.handleOnMouseLeave} onClick={this.handleClick} className={classNames("point", {selected: this.props.isSelected})}>
+                <div onMouseEnter={this.handleOnMouseEnter} onMouseLeave={this.handleOnMouseLeave} onClick={this.handleClick} className={classNames("point", {selected: this.props.data.isSelected})}>
                     <OverlayTrigger trigger="" placement="auto" overlay={popover} show={this.state.show}><div>{this.props.id}</div></OverlayTrigger>
                 </div>               
             </Draggable>         
         )
     }
 }
+
+Point.propTypes = {
+    data : PropTypes.exact({
+        x: PropTypes.number, 
+        y: PropTypes.number, 
+        title: PropTypes.string, 
+        logo: PropTypes.string, 
+        content: PropTypes.string, 
+        id: PropTypes.number.isRequired,
+        isSelected: PropTypes.bool,
+        links: PropTypes.arrayOf(PropTypes.exact({
+            label: PropTypes.string, 
+            url: PropTypes.string
+        }))
+    }).isRequired,
+    onClick: PropTypes.func.isRequired,
+    onMove: PropTypes.func.isRequired,
+    id: PropTypes.number.isRequired,
+};
+
+Point.defaultProps = {
+    data: {
+        x: 0, y: 0, title: '', logo: '', content: '', id: 0, links: []
+    }
+};
 
 export default Point;

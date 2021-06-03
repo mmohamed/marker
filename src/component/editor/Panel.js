@@ -6,6 +6,8 @@ import { Form, Button, Row, Col, InputGroup, Tabs, Tab, Modal, Overlay, Tooltip 
 import copy from 'copy-to-clipboard';
 import User from './User'
 import FileList from './FileList'
+import PropTypes from 'prop-types';
+import DataService from '../../service/DataService';
 
 class Panel extends React.Component {
 
@@ -42,6 +44,8 @@ class Panel extends React.Component {
         this.openModal = React.createRef();
         this.user = React.createRef();
         this.export = React.createRef();
+
+        this.service = new DataService();
     }
 
     handleSave = () => {
@@ -59,23 +63,16 @@ class Panel extends React.Component {
         if(this.state.filename === ''){
             return;
         }        
-        let method = 'post';
-        let url = 'http://localhost:5000/user/'+this.user.current.getUID()+'/files';
-        if(this.state.currentFile){
-            method = 'put';
-            url = url + '/' + this.state.currentFile.id;
-        }
 
-        let headers = new Headers();        
-        headers.append('Authorization', this.user.current.getToken());
-        headers.append('Content-Type', 'application/json');
-        
         let content = this.props.get();
         content['name'] =  this.state.filename;
-        
-        fetch(url, {headers: headers, method: method, body: JSON.stringify(content)})
-            .then(res => res.json())
-            .then((data) => {
+
+        this.service.save(
+            this.user.current.getToken(),
+            this.user.current.getUID(),
+            content,
+            this.state.currentFile ? this.state.currentFile.id : null,
+            (data) => {
                 if(data.status){
                     this.setState({currentFile: {id: data.message, name: this.state.filename }}, () => {
                         this.handleCancelSave();
@@ -83,25 +80,26 @@ class Panel extends React.Component {
                     });                    
                     this.user.current.setCurrentFilename(this.state.filename);
                     this.user.current.setCurrentFileSavedAt(new Date());
+                    window.location.hash = window.btoa(data.message);
                 }else{
                     this.props.onError('Saving file error, please try again...');
-                }                   
-            }).catch(() => {
+                }    
+            },
+            (error) => {
                 this.props.onError('Saving file error, please try again...');
-            });
+            }
+        );
     }
 
     handleDeleteFile = (file) => {        
         if(!file || !file.id){
             return;
-        }        
-        let url = 'http://localhost:5000/user/'+this.user.current.getUID()+'/files/'+file.id;
-        let headers = new Headers();        
-        headers.append('Authorization', this.user.current.getToken());
-        headers.append('Content-Type', 'application/json');                
-        fetch(url, {headers: headers, method: 'delete'})
-            .then(res => res.json())
-            .then((data) => {
+        }       
+        this.service.delete(
+            this.user.current.getToken(),
+            this.user.current.getUID(),
+            file.id,
+            (data) => {
                 if(data.status){
                     if(this.state.currentFile.id === file.id){
                         this.setState({currentFile: null, filename: ''}, () => {
@@ -112,10 +110,13 @@ class Panel extends React.Component {
                     }
                 }else{
                     this.props.onError('Deleting file error, please try again...');
-                }                   
-            }).catch(() => {
+                }  
+            },
+            (error) => {
                 this.props.onError('Deleting file error, please try again...');
-            });
+            }
+        );
+        // TODO : if delete current, reload app
     }
 
     handleOpenFile = async (file) => {
@@ -123,13 +124,12 @@ class Panel extends React.Component {
             return;
         }
         let token = await this.user.current.getToken()
-        let url = 'http://localhost:5000/user/'+this.user.current.getUID()+'/files/'+file.id;
-        let headers = new Headers();        
-        headers.append('Authorization', token);
-        headers.append('Content-Type', 'application/json');                
-        fetch(url, {headers: headers, method: 'get'})
-            .then(res => res.json())
-            .then((data) => {
+
+        this.service.get(
+            token,
+            this.user.current.getUID(),
+            file.id,
+            (data) => {
                 if(data && this.props.load){                    
                     this.props.load(data.background, data.ai, data.points);                    
                     this.setState({currentFile: {id: data.id, name: data.name}, filename: data.name}, () => {
@@ -140,10 +140,12 @@ class Panel extends React.Component {
                     window.location.hash = window.btoa(file.id);
                 }else{
                     this.props.onError('Loading file error, please try again...');
-                }                   
-            }).catch(() => {
+                }    
+            },
+            (error) => {
                 this.props.onError('Loading file error, please try again...');
-            });
+            }
+        );
     }
 
     handleOpen = () => {
@@ -151,20 +153,20 @@ class Panel extends React.Component {
     }
 
     handleUserLoad = (userdata, token) => {
-        let headers = new Headers();
-        headers.append('Authorization', (token ? token : this.user.current.getToken()));
-        // get user data
-        fetch('http://localhost:5000/user/'+(userdata ? userdata.uid : this.user.current.getUID())+'/files', {headers: headers})
-            .then(res => res.json())
-            .then((data) => {
+        this.service.list(
+            token ? token : this.user.current.getToken(),
+            userdata ? userdata.uid : this.user.current.getUID(),
+            (data) => {
                 this.openModal.current.handleLoad(data);
                 if(window.location.hash){
                     this.handleOpenFile({id:  window.atob(window.location.hash.substring(1))});
                 }
-            }).catch(() => {
+            },
+            (error) => {
                 this.props.onError('Loading file list error, please try again...');
-            });
-
+            }
+        );
+       
         this.setState({
             canOpen: true,
             canSave: true
@@ -244,8 +246,8 @@ class Panel extends React.Component {
         });
     }
 
-    handleExport = () => {
-        copy('Testing');
+    handleExport = () => {        
+        copy(window.location.href.replace('#', 'share/'));
         this.setState({exportDone: true});
         setTimeout(() => {
             this.setState({exportDone: false});
@@ -306,7 +308,7 @@ class Panel extends React.Component {
                         <Col>
                             <Button disabled={this.state.exportDone} ref={this.export} variant="success" block size="sm" onClick={this.handleExport}><i className="fa fa-share-square"></i> Export</Button>
                             <Overlay target={this.export.current} show={this.state.exportDone} placement="left">
-                                <Tooltip>Url copied to your clipboard</Tooltip>
+                                <Tooltip>Schema URL copied to your clipboard</Tooltip>
                             </Overlay>
                         </Col>
                     </Form.Row>
@@ -386,6 +388,19 @@ class Panel extends React.Component {
             </>
         )
     }
+}
+
+Panel.propTypes = {
+    get: PropTypes.func.isRequired,
+    onError: PropTypes.func.isRequired,
+    updateBackground: PropTypes.func.isRequired,
+    undo: PropTypes.func.isRequired,
+    redo: PropTypes.func.isRequired,
+    clear: PropTypes.func.isRequired,    
+    savePoint: PropTypes.func.isRequired,
+    addPoint: PropTypes.func.isRequired,
+    deletePoint: PropTypes.func.isRequired,
+    load: PropTypes.func
 }
 
 export default Panel;
