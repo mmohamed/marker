@@ -1,22 +1,11 @@
 import './../App.css';
 import Panel from '../component/editor/Panel'
 import Point from '../component/Point'
-import { Toast  } from 'react-bootstrap';
+import Notification from '../component/common/Notification';
 import React from 'react';
 import { Container, Col, Row } from 'react-bootstrap';
-
-class PointData {
-  constructor(id, title, content, logo, links, x, y, isSelected){
-      this.id = id || '';
-      this.title = title || '';
-      this.content = content || '';
-      this.logo = logo || '';
-      this.links = links || [{label: '', url: ''}, {label: '', url: ''}, {label: '', url: ''}];
-      this.x = x || 0;
-      this.y = y || 0;
-      this.isSelected = isSelected || false;
-  }
-}
+import PointData from '../data/PointData';
+import HistoryService from '../service/HistoryService';
 
 class MainView extends React.Component {
 
@@ -28,14 +17,15 @@ class MainView extends React.Component {
       ai: 1,
       current: null,
       background: '',
-      error: null,
       canUndo: false,
       canRedo: false
     };
-
-    this.histories = [{points: [], ai: 1, current: null, background: ''}];
-    this.historiesIndex = 0;
+    
     this.panel = React.createRef();  
+    this.errorViewer = React.createRef(); 
+    this.infoViewer = React.createRef(); 
+
+    this.historyService = new HistoryService(localStorage);
   }
 
   UNDO_KEY = 90;
@@ -55,23 +45,17 @@ class MainView extends React.Component {
   }
 
   componentDidMount() {
-    let saved = localStorage.getItem('history');
-    if(saved){
-      this.histories = JSON.parse(saved);
-    }
-    let restore = this.histories[this.histories.length-1];
-    let savedBackground = localStorage.getItem('history-background');
-    if(savedBackground){
-      this.setState({background: savedBackground});
-    }
-    if(restore){
-      this.setState(restore, () => {
-        this.historiesIndex = this.histories.length-1;
+    let last = this.historyService.load();
+    if(last){
+      this.setState(last, () => {
         this.panel.current.handleSelectPoint(this.getPointById(this.state.current));
         this.updateUndoRedoAbility();
       });
-    }        
-    document.addEventListener('keydown', this.handleKeyDown);
+    }
+    if(this.historyService.getBackground()){
+      this.setState({background: this.historyService.getBackground()});
+    }    
+    document.addEventListener('keydown', this.handleKeyDown);    
   }
 
   componentWillUnmount() {
@@ -91,17 +75,13 @@ class MainView extends React.Component {
   }
 
   undo = () => {
-    if(this.historiesIndex === 0){
+    let history = this.historyService.undo();
+    if(!history){
       return;
     }    
-    this.historiesIndex = this.historiesIndex - 1;
     // clear for deleteing point and recreating 
     this.setState({points: []}, () => {
-      let selectedHitory = this.histories[this.historiesIndex];
-      let newState = { points: JSON.parse(JSON.stringify(selectedHitory.points)), 
-        ai: selectedHitory.ai, 
-        current: selectedHitory.current };
-      this.setState(newState, () => {
+      this.setState({ points: history.points, ai: history.ai, current: history.current }, () => {
         this.panel.current.handleSelectPoint(this.getPointById(this.state.current));
         this.updateUndoRedoAbility();
       });
@@ -109,57 +89,44 @@ class MainView extends React.Component {
   }
 
   redo = () => {
-    if(this.historiesIndex === this.histories.length-1){
+    let history = this.historyService.redo();
+    if(!history){
       return;
-    }
-    this.historiesIndex = this.historiesIndex + 1;
+    } 
     // clear for deleteing point and recreating 
     this.setState({points: []}, () => {
-      let selectedHitory = this.histories[this.historiesIndex];
-      let newState = { points: JSON.parse(JSON.stringify(selectedHitory.points)), 
-        ai: selectedHitory.ai, 
-        current: selectedHitory.current };
-      this.setState(newState, () => {
+      this.setState({ points: history.points, ai: history.ai, current: history.current }, () => {
         this.panel.current.handleSelectPoint(this.getPointById(this.state.current));
         this.updateUndoRedoAbility();
       });
     });
   }
 
-  addHistory = () => {    
-    // not on top histories
-    if(this.historiesIndex !== this.histories.length-1){ 
-      let historiesCopy = [];  
-      for(let idx = 0; idx < this.historiesIndex+1; idx++){
-        historiesCopy.push(JSON.parse(JSON.stringify(this.histories[idx])));
-      }
-      this.histories = historiesCopy;      
-    }    
-    // copy points
-    let points = JSON.parse(JSON.stringify(this.state.points));  
-    this.histories.push({points: points, ai: this.state.ai, current: this.state.current});
-    this.historiesIndex = this.histories.length-1;    
-    this.updateUndoRedoAbility();
-    try{
-      localStorage.setItem('history', JSON.stringify(this.histories));    
-      localStorage.setItem('history-background', this.state.background);
-    }catch (error){
-      this.setToastMessage("Background is over size, please use one less 2Mb !");
-    }  
+  addHistory = () => {         
+    // add history
+    this.historyService.add(this.state.points, this.state.ai, this.state.current);          
+    if(!this.historyService.save()){
+      this.onError("Background is over size, please use one less 2Mb !");
+    }
+    this.updateUndoRedoAbility(); 
+  }
+
+  addHistoryBackground = () => {
+    this.historyService.setBackground(this.state.background)    ;
+    if(!this.historyService.save()){
+      this.onError("Background is over size, please use one less 2Mb !");
+    }
   }
 
   clearHistory = () => {
-    this.histories = [{points: [], ai: 1, current: null, background: ''}];
-    this.historiesIndex = 0;
+    this.historyService.clear();
     this.updateUndoRedoAbility();
-    localStorage.removeItem('history');
-    localStorage.removeItem('history-background');
   }
 
   updateUndoRedoAbility = () => {    
-    this.setState({canUndo : this.historiesIndex > 0, canRedo: this.historiesIndex < this.histories.length-1}, () => {
-      this.panel.current.setCanUndo(this.historiesIndex > 0);
-      this.panel.current.setCanRedo(this.historiesIndex < this.histories.length-1);
+    this.setState({canUndo : this.historyService.canUndo(), canRedo: this.historyService.canRedo()}, () => {
+      this.panel.current.setCanUndo(this.historyService.canUndo());
+      this.panel.current.setCanRedo(this.historyService.canRedo());
     });
   }
 
@@ -172,7 +139,7 @@ class MainView extends React.Component {
       error: null
     }, () => {
       this.clearHistory();
-      this.panel.current.handleSelectPoint(new PointData());
+      this.panel.current.handleSelectPoint();
       if(callback && typeof callback === 'function'){
         callback();
       }
@@ -257,7 +224,7 @@ class MainView extends React.Component {
   }
 
   updateBackground = (image) => {
-    this.setState({background: "url("+image+")"}, this.addHistory);    
+    this.setState({background: "url("+image+")"}, this.addHistoryBackground);    
   }
 
   savePoint = (newData) => {
@@ -278,21 +245,20 @@ class MainView extends React.Component {
     }, this.addHistory);
   }
 
-  setToastMessage = (message) => {
-    this.setState({error: message});
+  onError = (message) => {
+    this.errorViewer.current.setMessage(message);
+  }
+
+  onSuccess = (message) => {
+    this.infoViewer.current.setMessage(message);
   }
 
   render() {
     return (
-      <>      
-        <Toast style={{position: 'absolute', bottom: '30px', left: '30px', zIndex: '999'}}  onClose={() => this.setToastMessage(null)} show={this.state.error != null} delay={10000} autohide>
-          <Toast.Header>
-            <img src="holder.js/20x20?text=%20" className="rounded mr-2" alt=""/>
-            <strong className="mr-auto">Alert</strong>
-            <small>Application important message !</small>
-          </Toast.Header>
-          <Toast.Body>{this.state.error}</Toast.Body>
-        </Toast>
+      <>    
+
+        <Notification type='Alert' title='Application important message !' priority={true} ref={this.errorViewer} />
+        <Notification type='New' title='' ref={this.infoViewer} />
 
         <Container fluid style={{height: '100%'}}>
 
@@ -316,7 +282,8 @@ class MainView extends React.Component {
                 undo={this.undo}
                 redo={this.redo}
                 get={this.get}
-                onError={this.setToastMessage}
+                onError={this.onError}
+                onSuccess={this.onSuccess}
               ref={this.panel} />            
             </Col>
           </Row>        

@@ -40,7 +40,7 @@ class Tooltip extends React.Component {
                     <ul>
                     {this.state.links.map((link, i) => {
                         if(link.url !== '' && link.label !== ''){
-                            return (<li id={"link-view" + i}><a rel="noreferrer" target="_blank" href={link.url}>{link.label}</a></li>)
+                            return (<li id={"link-view" + i} key={i}><a rel="noreferrer" target="_blank" href={link.url}>{link.label}</a></li>)
                         }
                         return '';
                     })}

@@ -55,7 +55,19 @@ class ViewPoint extends React.Component {
 }
 
 ViewPoint.propTypes = {
-    data : PropTypes.object
+    data : PropTypes.exact({
+        x: PropTypes.number, 
+        y: PropTypes.number, 
+        title: PropTypes.string, 
+        logo: PropTypes.string, 
+        content: PropTypes.string, 
+        id: PropTypes.number.isRequired,
+        isSelected: PropTypes.bool,
+        links: PropTypes.arrayOf(PropTypes.exact({
+            label: PropTypes.string, 
+            url: PropTypes.string
+        }))
+    }).isRequired
 };
 
 ViewPoint.defaultProps = {

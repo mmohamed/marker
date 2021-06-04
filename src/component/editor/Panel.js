@@ -8,6 +8,7 @@ import User from './User'
 import FileList from './FileList'
 import PropTypes from 'prop-types';
 import DataService from '../../service/DataService';
+import LinkData from '../../data/LinkData';
 
 class Panel extends React.Component {
 
@@ -19,7 +20,7 @@ class Panel extends React.Component {
             title: '', 
             logo: '',
             content: '',
-            links: [{label: '', url: ''}, {label: '', url: ''}, {label: '', url: ''}],
+            links: [new LinkData(), new LinkData(), new LinkData()],
             background: '',            
             canUndo: false,
             canRedo: false,
@@ -130,7 +131,7 @@ class Panel extends React.Component {
             this.user.current.getUID(),
             file.id,
             (data) => {
-                if(data && this.props.load){                    
+                if(data && this.props.load){    
                     this.props.load(data.background, data.ai, data.points);                    
                     this.setState({currentFile: {id: data.id, name: data.name}, filename: data.name}, () => {
                         this.user.current.setCurrentFilename(this.state.filename);                        
@@ -138,6 +139,7 @@ class Panel extends React.Component {
                     });
                     this.openModal.current.handleClose();
                     window.location.hash = window.btoa(file.id);
+                    this.props.onSuccess('File "'+data.name+'" load :)');
                 }else{
                     this.props.onError('Loading file error, please try again...');
                 }    
@@ -242,7 +244,7 @@ class Panel extends React.Component {
             title: pointData ? pointData.title : '', 
             logo: pointData ? pointData.logo : '',
             content: pointData ? pointData.content : '',
-            links: pointData && pointData.links.length > 0 ? pointData.links : [{label: '', url: ''}, {label: '', url: ''}, {label: '', url: ''}]
+            links: pointData && pointData.links.length > 0 ? pointData.links : [new LinkData(), new LinkData(), new LinkData()]
         });
     }
 
@@ -393,6 +395,7 @@ class Panel extends React.Component {
 Panel.propTypes = {
     get: PropTypes.func.isRequired,
     onError: PropTypes.func.isRequired,
+    onSuccess: PropTypes.func.isRequired,
     updateBackground: PropTypes.func.isRequired,
     undo: PropTypes.func.isRequired,
     redo: PropTypes.func.isRequired,
