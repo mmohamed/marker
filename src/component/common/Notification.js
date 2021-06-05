@@ -22,7 +22,7 @@ class Notification extends React.Component {
                 style={{position: 'absolute', bottom: '30px', left: '30px', zIndex: '999', minWidth: '300px'}}  
                 onClose={() => this.setMessage(null)} 
                 show={this.state.message != null} 
-                delay={10000} autohide>
+                delay={3000} autohide>
                 <Toast.Header closeButton={false}>
                     <Badge pill variant={this.props.priority ? "danger" : "primary"}>
                         <i className="fa fa-flag"></i>

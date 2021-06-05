@@ -7,8 +7,12 @@ class DataService {
         // get user data
         let url = process.env.REACT_APP_API_URL_BASE+'/user/'+userUID+'/files';
         fetch(url, {headers: headers})
-        .then(res => res.json())
-        .then((data) => {
+        .then((res) => {
+            if(!res.ok){
+             throw  new Error('');                
+            }
+            return res.json()
+        }).then((data) => {
             onSuccess(data);
         }).catch((error) => {
             onError(error);
@@ -28,8 +32,12 @@ class DataService {
         headers.append('Content-Type', 'application/json');
         
         fetch(url, {headers: headers, method: method, body: JSON.stringify(content)})
-        .then(res => res.json())
-        .then((data) => {
+        .then((res) => {
+            if(!res.ok){
+             throw  new Error('');                
+            }
+            return res.json()
+        }).then((data) => {
             onSuccess(data);                  
         }).catch((error) => {
             onError(error);
@@ -45,8 +53,12 @@ class DataService {
         headers.append('Content-Type', 'application/json');        
 
         fetch(url, {headers: headers, method: method})
-        .then(res => res.json())
-        .then((data) => {
+        .then((res) => {
+            if(!res.ok){
+             throw  new Error('');                
+            }
+            return res.json()
+        }).then((data) => {
             onSuccess(data);                 
         }).catch((error) => {
             onError(error);
@@ -62,7 +74,12 @@ class DataService {
         headers.append('Content-Type', 'application/json'); 
 
         fetch(url, {headers: headers, method: method})
-        .then(res => res.json())
+        .then((res) => {
+            if(!res.ok){
+             throw  new Error('');                
+            }
+            return res.json()
+        })
         .then((data) => {
             onSuccess(data);                     
         }).catch((error) => {
@@ -78,8 +95,12 @@ class DataService {
         headers.append('Content-Type', 'application/json');    
 
         fetch(url, {headers: headers, method: method})
-        .then(res => res.json())
-        .then((data) => {
+        .then((res) => {
+            if(!res.ok){
+             throw  new Error('');                
+            }
+            return res.json()
+        }).then((data) => {
             onSuccess(data);                   
         }).catch((error) => {
             onError(error);

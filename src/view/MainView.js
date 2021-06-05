@@ -30,9 +30,14 @@ class MainView extends React.Component {
 
   UNDO_KEY = 90;
   REDO_KEY = 89;
+  SAVE_KEY = 83;
 
-  handleKeyDown = (event) => {    
+  handleKeyDown = (event) => {     
     switch(event.keyCode) {
+        case this.SAVE_KEY:   
+          event.preventDefault();
+          this.panel.current.handleExecuteSave();
+          break;
         case this.UNDO_KEY:   
           this.undo();           
           break;
@@ -211,7 +216,7 @@ class MainView extends React.Component {
       for(let idx in points){
         if(points[idx].isSelected){
           points.splice(idx, 1);
-          this.panel.current.handleSelectPoint(new PointData());
+          this.panel.current.handleSelectPoint();
           break;
         }
       }

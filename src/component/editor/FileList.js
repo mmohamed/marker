@@ -49,7 +49,7 @@ class FileList extends Component {
                                 <Row>
                                     <Col md="8"><span>{file.name}</span></Col>
                                     <Col md="2"><Button variant="outline-primary" block size="sm" onClick={() => this.handleOpen(file)}><i className="fa fa-folder-open"></i></Button></Col>
-                                    <Col md="2"><Button variant="outline-danger" block size="sm" onClick={() => this.handleDelete(file)}><i className="fa fa-floppy-o"></i></Button></Col>                                
+                                    <Col md="2"><Button variant="outline-danger" block size="sm" onClick={() => this.handleDelete(file)}><i className="fa fa-trash"></i></Button></Col>                                
                                 </Row>
                             </ListGroup.Item>)
                         })}

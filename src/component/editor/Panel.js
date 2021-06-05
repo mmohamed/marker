@@ -28,6 +28,7 @@ class Panel extends React.Component {
             currentFile: null,
             showSave: false,
             filename: '',
+            cantExport: true,
             exportDone: false
         };
 
@@ -62,7 +63,7 @@ class Panel extends React.Component {
 
     handleExecuteSave = () => {
         if(this.state.filename === ''){
-            return;
+            return this.handleSave();
         }        
 
         let content = this.props.get();
@@ -75,13 +76,14 @@ class Panel extends React.Component {
             this.state.currentFile ? this.state.currentFile.id : null,
             (data) => {
                 if(data.status){
-                    this.setState({currentFile: {id: data.message, name: this.state.filename }}, () => {
+                    this.setState({currentFile: {id: data.message, name: this.state.filename, cantExport: false }}, () => {
                         this.handleCancelSave();
-                        this.handleUserLoad();
+                        this.handleUserLoad(null, null, true);
                     });                    
                     this.user.current.setCurrentFilename(this.state.filename);
                     this.user.current.setCurrentFileSavedAt(new Date());
-                    window.location.hash = window.btoa(data.message);
+                    window.location.hash = window.btoa(data.message);                    
+                    this.props.onSuccess('File "'+this.state.filename+'" saved...');
                 }else{
                     this.props.onError('Saving file error, please try again...');
                 }    
@@ -103,9 +105,12 @@ class Panel extends React.Component {
             (data) => {
                 if(data.status){
                     if(this.state.currentFile.id === file.id){
-                        this.setState({currentFile: null, filename: ''}, () => {
+                        this.setState({currentFile: null, filename: '', cantExport: true}, () => {
                             this.user.current.setCurrentFilename(null);
                             this.user.current.setCurrentFileSavedAt(null);
+                            this.props.clear(() => {
+                                window.location.hash = '';   
+                            }); 
                         });
                         this.handleUserLoad();
                     }
@@ -116,8 +121,7 @@ class Panel extends React.Component {
             (error) => {
                 this.props.onError('Deleting file error, please try again...');
             }
-        );
-        // TODO : if delete current, reload app
+        );    
     }
 
     handleOpenFile = async (file) => {
@@ -133,7 +137,7 @@ class Panel extends React.Component {
             (data) => {
                 if(data && this.props.load){    
                     this.props.load(data.background, data.ai, data.points);                    
-                    this.setState({currentFile: {id: data.id, name: data.name}, filename: data.name}, () => {
+                    this.setState({currentFile: {id: data.id, name: data.name}, filename: data.name, cantExport: false}, () => {
                         this.user.current.setCurrentFilename(this.state.filename);                        
                         this.user.current.setCurrentFileSavedAt(new Date(data.saved_at));
                     });
@@ -154,13 +158,13 @@ class Panel extends React.Component {
         this.openModal.current.handleShow();
     }
 
-    handleUserLoad = (userdata, token) => {
+    handleUserLoad = (userdata, token, ignoreHash) => {
         this.service.list(
             token ? token : this.user.current.getToken(),
             userdata ? userdata.uid : this.user.current.getUID(),
             (data) => {
                 this.openModal.current.handleLoad(data);
-                if(window.location.hash){
+                if(!ignoreHash && window.location.hash){
                     this.handleOpenFile({id:  window.atob(window.location.hash.substring(1))});
                 }
             },
@@ -235,7 +239,16 @@ class Panel extends React.Component {
     }
 
     handleConfirmClear = () => {
-        this.props.clear(); 
+        this.props.clear(() => {
+            this.setState({currentFile: null, filename: '', cantExport: true}, () => {
+                this.user.current.setCurrentFilename(null);
+                this.user.current.setCurrentFileSavedAt(null);
+                this.props.clear(() => {
+                    window.location.hash = '';   
+                }); 
+            });
+            window.location.hash = '';   
+        }); 
     }
 
     handleSelectPoint = (pointData) => {
@@ -308,7 +321,7 @@ class Panel extends React.Component {
                         <Col><Button variant="warning" block size="sm" onClick={this.handleDeletePoint}><i className="fa fa-minus-square"></i> Delete</Button></Col>
                         <Col><Button variant="danger" block size="sm" onClick={this.handleClear}><i className="fa fa-trash"></i> Clear</Button></Col>
                         <Col>
-                            <Button disabled={this.state.exportDone} ref={this.export} variant="success" block size="sm" onClick={this.handleExport}><i className="fa fa-share-square"></i> Export</Button>
+                            <Button disabled={this.state.cantExport} ref={this.export} variant="success" block size="sm" onClick={this.handleExport}><i className="fa fa-share-square"></i> Export</Button>
                             <Overlay target={this.export.current} show={this.state.exportDone} placement="left">
                                 <Tooltip>Schema URL copied to your clipboard</Tooltip>
                             </Overlay>
