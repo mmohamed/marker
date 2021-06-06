@@ -1,5 +1,8 @@
 {
-  "name": "jsapp",
+  "name": "marker",
+  "author": "Marker Board <marker@medinvention.dev>",
+  "description": "Marker interactive board",
+  "license": "MIT",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -9,6 +12,7 @@
     "bootstrap": "^4.6.0",
     "classnames": "^2.3.1",
     "copy-to-clipboard": "^3.3.1",
+    "font-awesome": "^4.7.0",
     "keycloak-js": "^13.0.1",
     "react": "^17.0.2",
     "react-bootstrap": "^1.6.0",
@@ -18,8 +22,7 @@
     "react-router-dom": "^5.2.0",
     "react-scripts": "4.0.3",
     "react-time-ago": "^6.2.2",
-    "typescript": "^4.3.2",
-    "web-vitals": "^1.1.2"
+    "typescript": "^4.3.2"
   },
   "scripts": {
     "start": "react-scripts start",
