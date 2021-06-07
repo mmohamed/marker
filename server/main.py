@@ -168,7 +168,7 @@ def __startup():
             points TEXT
         );
     """)        
-    print('Embedded DB ['+ dbpath +'] initialised...')
+    print('Embedded DB initialised...')
     con.close()
     
     if not os.environ.get('KEYCLOAK_REALM') or not os.environ.get('KEYCLOAK_URL') or not os.environ.get('KEYCLOAK_APP'):
