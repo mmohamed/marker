@@ -137,7 +137,10 @@ def __jsonNotAutorizedResponse():
 
 def __connect():
     try:
-        con = sl.connect('jsapp.db')
+        dbpath = 'jsapp.db'
+        if None != os.environ.get('DB_PATH'):
+            dbpath = os.environ.get('DB_PATH')
+        con = sl.connect(dbpath)
         if not con:
             return None
         return con
@@ -150,11 +153,7 @@ def __startup():
         print('Env file loaded')
         load_dotenv()
 
-    dbpath = 'jsapp.db'
-    if None != os.environ.get('DB_PATH'):
-        dbpath = os.environ.get('DB_PATH')
-
-    con = sl.connect(dbpath)
+    con = __connect()
     if not con:
         raise SystemExit('Unable to intitialise embedded db connection !')
 

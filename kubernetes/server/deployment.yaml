@@ -24,6 +24,8 @@ spec:
           - name: maker-data
             mountPath: /var/db
         env:
+          - name: DB_PATH
+            value: /var/db/marker.db
           - name: KEYCLOAK_REALM
             value: master
           - name: KEYCLOAK_URL
