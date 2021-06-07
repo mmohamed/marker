@@ -5,6 +5,7 @@ import os
 from datetime import datetime
 from keycloak import KeycloakOpenID
 from keycloak import exceptions
+from dotenv import load_dotenv
 
 api = Flask(__name__)
 CORS(api, resources={r"/*": {"origins": "*"}})
@@ -144,6 +145,10 @@ def __connect():
         return None
 
 def __startup():
+    # load env config file (.env)
+    if 'NODEBUG' not in os.environ:
+        load_dotenv()
+
     dbpath = 'jsapp.db'
     if 'DB_PATH' in os.environ:
         dbpath = os.environ['DB_PATH']
@@ -165,12 +170,15 @@ def __startup():
     """)        
     print('Embedded DB ['+ dbpath +'] initialised...')
     con.close()
-
+    
+    if not all([key in os.environ for key in ['KEYCLOAK_REALM', 'KEYCLOAK_URL', 'KEYCLOAK_APP']]):
+        raise SystemExit('Unable to intitialise Keycloak Client, missing one or more env configuration (KEYCLOAK_REALM, KEYCLOAK_URL, KEYCLOAK_APP) !')
+    
     global keycloakOpenid
     keycloakOpenid = KeycloakOpenID(
-        server_url="http://localhost:8080/auth/",
-        client_id="js-app",
-        realm_name="master"
+        server_url=os.environ['KEYCLOAK_URL'],
+        client_id=os.environ['KEYCLOAK_APP'],
+        realm_name=os.environ['KEYCLOAK_REALM']
     )
     print('KeyCloak Client initialised...')
 
@@ -189,4 +197,4 @@ def __auth(request, uid):
 
 if __name__ == '__main__':
     __startup()
-    api.run(host='0.0.0.0', debug=True)
+    api.run(host='0.0.0.0', debug='NODEBUG' not in os.environ)

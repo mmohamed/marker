@@ -1,4 +1,4 @@
-import './../App.css';
+import '../App.css';
 import Panel from '../component/editor/Panel'
 import Point from '../component/Point'
 import Notification from '../component/common/Notification';

@@ -16,15 +16,20 @@ spec:
     spec:
       containers:
       - name: server-marker
-        image: medinvention/marker-server:0.1.0
+        image: medinvention/marker-server:0.1.1
+        imagePullPolicy: Always
         ports:
           - containerPort: 5000
         volumeMounts:
           - name: maker-data
             mountPath: /var/db
         env:
-          - name: DB_PATH
-            value: /var/db/marker.db
+          - name: KEYCLOAK_REALM
+            value: master
+          - name: KEYCLOAK_URL
+            value: https://sso.medinvention.dev/auth
+          - name: KEYCLOAK_APP
+            value: marker-ui
       volumes:
         - name: maker-data
           persistentVolumeClaim:

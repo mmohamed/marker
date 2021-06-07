@@ -2,7 +2,7 @@ DOCKERX=yes
 VERSION := $(shell cat package.json | grep version | head -1 | grep -Po '([0-9]+\.[0-9]+\.[0-9]+)')
 
 .EXPORT_ALL_VARIABLES:
-NODE_OPTIONS=--max_old_space_size=256
+#NODE_OPTIONS=--max_old_space_size=256
 REACT_APP_KEYCLOAK_REALM=master
 REACT_APP_KEYCLOAK_URL=https://sso.medinvention.dev/auth
 REACT_APP_KEYCLOAK_APP=marker-ui

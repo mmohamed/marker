@@ -7,6 +7,7 @@ name = "pypi"
 flask = "*"
 flask-cors = "*"
 python-keycloak = "*"
+python-dotenv = "*"
 
 [dev-packages]
 

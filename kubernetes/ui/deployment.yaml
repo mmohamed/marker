@@ -17,7 +17,10 @@ spec:
     spec:
       containers:
       - name: ui-marker
-        image: medinvention/marker-ui:0.1.0
-        #imagePullPolicy: Always
+        image: medinvention/marker-ui:0.1.1
+        imagePullPolicy: Always
         ports:
         - containerPort: 80
+        env:
+          - name: DB_PATH
+            value: /var/db/marker.db
