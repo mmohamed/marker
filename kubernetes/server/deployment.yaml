@@ -27,9 +27,11 @@ spec:
           - name: KEYCLOAK_REALM
             value: master
           - name: KEYCLOAK_URL
-            value: https://sso.medinvention.dev/auth
+            value: https://sso.medinvention.dev/auth/
           - name: KEYCLOAK_APP
             value: marker-ui
+          - name: NODEBUG
+            value: active
       volumes:
         - name: maker-data
           persistentVolumeClaim:

@@ -146,12 +146,13 @@ def __connect():
 
 def __startup():
     # load env config file (.env)
-    if 'NODEBUG' not in os.environ:
+    if not os.environ.get('NODEBUG'):
+        print('Env file loaded')
         load_dotenv()
 
     dbpath = 'jsapp.db'
-    if 'DB_PATH' in os.environ:
-        dbpath = os.environ['DB_PATH']
+    if None != os.environ.get('DB_PATH'):
+        dbpath = os.environ.get('DB_PATH')
 
     con = sl.connect(dbpath)
     if not con:
@@ -171,14 +172,14 @@ def __startup():
     print('Embedded DB ['+ dbpath +'] initialised...')
     con.close()
     
-    if not all([key in os.environ for key in ['KEYCLOAK_REALM', 'KEYCLOAK_URL', 'KEYCLOAK_APP']]):
+    if not os.environ.get('KEYCLOAK_REALM') or not os.environ.get('KEYCLOAK_URL') or not os.environ.get('KEYCLOAK_APP'):
         raise SystemExit('Unable to intitialise Keycloak Client, missing one or more env configuration (KEYCLOAK_REALM, KEYCLOAK_URL, KEYCLOAK_APP) !')
     
     global keycloakOpenid
     keycloakOpenid = KeycloakOpenID(
-        server_url=os.environ['KEYCLOAK_URL'],
-        client_id=os.environ['KEYCLOAK_APP'],
-        realm_name=os.environ['KEYCLOAK_REALM']
+        server_url=os.environ.get('KEYCLOAK_URL'),
+        client_id=os.environ.get('KEYCLOAK_APP'),
+        realm_name=os.environ.get('KEYCLOAK_REALM')
     )
     print('KeyCloak Client initialised...')
 
@@ -197,4 +198,4 @@ def __auth(request, uid):
 
 if __name__ == '__main__':
     __startup()
-    api.run(host='0.0.0.0', debug='NODEBUG' not in os.environ)
+    api.run(host='0.0.0.0', debug=(None != os.environ.get('NODEBUG')))

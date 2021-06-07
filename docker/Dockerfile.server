@@ -7,6 +7,7 @@ WORKDIR /var/server
 RUN pip install pipenv
 #RUN pipenv run pip freeze > requirements.txt && RUN pip install -r requirements.txt
 RUN pipenv install
+RUN rm -rf .env
 
 EXPOSE 5000
 
