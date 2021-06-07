@@ -1,0 +1,22 @@
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: nginx
+  name: ui-marker
+  labels:
+    run: ui
+spec:
+  rules:
+    - host: marker.medinvention.dev
+      http:
+        paths:
+          - backend:
+              serviceName: ui-marker-service
+              servicePort: http
+            path: /
+  tls:
+    - hosts:
+      - marker.medinvention.dev
+      secretName: marker-tls

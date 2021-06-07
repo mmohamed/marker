@@ -1,0 +1,22 @@
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: nginx
+  name: server-marker-ingress
+  labels:
+    run: server
+spec:
+  rules:
+    - host: marker-server.medinvention.dev
+      http:
+        paths:
+          - backend:
+              serviceName: server-marker-service
+              servicePort: http
+            path: /
+  tls:
+    - hosts:
+      - marker-server.medinvention.dev
+      secretName: marker-tls

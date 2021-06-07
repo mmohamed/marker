@@ -1,7 +1,7 @@
 {
   "name": "marker",
   "author": "Marker Board <marker@medinvention.dev>",
-  "description": "Marker interactive board",
+  "description": "Marker for interactive board",
   "license": "MIT",
   "version": "0.1.0",
   "private": true,

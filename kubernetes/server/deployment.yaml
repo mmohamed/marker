@@ -1,0 +1,31 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: server-marker
+  namespace: marker
+spec:
+  selector:
+    matchLabels:
+      run: server
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: server
+    spec:
+      containers:
+      - name: server-marker
+        image: medinvention/marker-server:0.1.0
+        ports:
+          - containerPort: 5000
+        volumeMounts:
+          - name: maker-data
+            mountPath: /var/db
+        env:
+          - name: DB_PATH
+            value: /var/db/marker.db
+      volumes:
+        - name: maker-data
+          persistentVolumeClaim:
+            claimName: server-marker-pvc

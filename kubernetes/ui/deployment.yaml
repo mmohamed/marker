@@ -1,0 +1,23 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ui-marker
+  labels:
+    run: ui
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      run: ui
+  template:
+    metadata:
+      labels:
+        run: ui
+    spec:
+      containers:
+      - name: ui-marker
+        image: medinvention/marker-ui:0.1.0
+        #imagePullPolicy: Always
+        ports:
+        - containerPort: 80
