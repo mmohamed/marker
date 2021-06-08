@@ -25,4 +25,6 @@ yarn-error.log*
 .env
 .env.development
 
+# custom
 /**/*tls.yaml
+/win_node_modules

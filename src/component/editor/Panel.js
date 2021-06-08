@@ -61,28 +61,31 @@ class Panel extends React.Component {
         this.setState({showSave: false, filename : this.state.currentFile ? this.state.currentFile.name : ''});
     }
 
-    handleExecuteSave = () => {
+    handleExecuteSave = async () => {
         if(this.state.filename === ''){
             return this.handleSave();
         }        
 
         let content = this.props.get();
         content['name'] =  this.state.filename;
-
+        
+        let token = await this.user.current.getToken();
+        
         this.service.save(
-            this.user.current.getToken(),
+            token,
             this.user.current.getUID(),
             content,
             this.state.currentFile ? this.state.currentFile.id : null,
             (data) => {
                 if(data.status){
-                    this.setState({currentFile: {id: data.message, name: this.state.filename, cantExport: false }}, () => {
+                    this.setState({currentFile: {id: data.message, name: this.state.filename}, cantExport: false }, () => {
                         this.handleCancelSave();
                         this.handleUserLoad(null, null, true);
+                        console.debug(this.state);
                     });                    
                     this.user.current.setCurrentFilename(this.state.filename);
                     this.user.current.setCurrentFileSavedAt(new Date());
-                    window.location.hash = window.btoa(data.message);                    
+                    window.location.hash = window.btoa(data.message);  
                     this.props.onSuccess('File "'+this.state.filename+'" saved...');
                 }else{
                     this.props.onError('Saving file error, please try again...');
@@ -94,12 +97,15 @@ class Panel extends React.Component {
         );
     }
 
-    handleDeleteFile = (file) => {        
+    handleDeleteFile = async (file) => {        
         if(!file || !file.id){
             return;
         }       
+
+        let token = await this.user.current.getToken();
+
         this.service.delete(
-            this.user.current.getToken(),
+            token,
             this.user.current.getUID(),
             file.id,
             (data) => {
@@ -128,7 +134,7 @@ class Panel extends React.Component {
         if(!file || !file.id){
             return;
         }
-        let token = await this.user.current.getToken()
+        let token = await this.user.current.getToken();
 
         this.service.get(
             token,
@@ -139,7 +145,7 @@ class Panel extends React.Component {
                     this.props.load(data.background, data.ai, data.points);                    
                     this.setState({currentFile: {id: data.id, name: data.name}, filename: data.name, cantExport: false}, () => {
                         this.user.current.setCurrentFilename(this.state.filename);                        
-                        this.user.current.setCurrentFileSavedAt(new Date(data.saved_at));
+                        this.user.current.setCurrentFileSavedAt(new Date(data.saved_at));                        
                     });
                     this.openModal.current.handleClose();
                     window.location.hash = window.btoa(file.id);
@@ -154,13 +160,14 @@ class Panel extends React.Component {
         );
     }
 
-    handleOpen = () => {
+    handleOpen = async () => {
         this.openModal.current.handleShow();
     }
 
-    handleUserLoad = (userdata, token, ignoreHash) => {
+    handleUserLoad = async (userdata, token, ignoreHash) => {
+        token = token ? token : await this.user.current.getToken();
         this.service.list(
-            token ? token : this.user.current.getToken(),
+            token,
             userdata ? userdata.uid : this.user.current.getUID(),
             (data) => {
                 this.openModal.current.handleLoad(data);
