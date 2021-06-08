@@ -37,23 +37,31 @@ body,
   color: white;
 }
 
+.panel hr{
+  margin-top: 0.7rem;
+  margin-bottom: 0.7rem;
+  border-color: gray;
+}
+
 .panel a{
   color: white;
 }
 
 .point {
-  background: red;
-  line-height: 20px;
-  border: 1px solid gray;
-  font-weight: bold;
+  background-color: #007bff;
+  border: 3px outset #fff;
+  line-height: 18px;
+  font-size: 18px !important;
+  color: #fff;
+  font-weight: 500;
+  font-size: 16px;
   border-radius: 50%;  
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   float: left;
-  cursor: move;
-  color: white;
+  cursor: move;  
   text-align: center;
-  animation-name: stretch;
+  animation-name: stretch;  
   animation-duration: 1.5s; 
   animation-timing-function: ease-out; 
   animation-delay: 0;
@@ -63,27 +71,26 @@ body,
   animation-play-state: running;
 }
 
-.point.view {
+.point.view {  
   cursor: pointer;
 }
 
 @keyframes stretch {
   0% {
-    background-color: red;
+    background-color: #007bff;
   }
   50% {
-    background-color: orange;
-    color: gray;
+    background-color: #28a745;
   }
   100% {
-    background-color: yellow;
-    color: black;
+    background-color: #dc3545;
   }
 }
 
 .selected {
-  background: #999;
+  background: #999;  
   animation-play-state: paused;
+  animation-name: none;
 }
 
 #container {

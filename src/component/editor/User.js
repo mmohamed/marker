@@ -112,7 +112,7 @@ class User extends Component {
                         <Button 
                             variant="primary" 
                             className="btn-circle btn-md" 
-                            style={{fontSize: '18px', fontWeight: 'bold'}} 
+                            style={{fontSize: '15px', fontWeight: 'bold'}} 
                             onClick={ () => this.handleLogout() }
                         >{this.state.username.substr(0, 2).toUpperCase()}</Button>
                     </Col>

@@ -17,7 +17,7 @@ def view(fid):
     if not con:
         return __jsonServerErrorResponse()
     cur = con.cursor()
-    cur.execute('SELECT saved_at, background, points FROM user_data WHERE id = ?', (fid))
+    cur.execute('SELECT saved_at, background, points FROM user_data WHERE id = ?', (fid,))
     result = cur.fetchone()    
     con.close()
 
@@ -37,7 +37,8 @@ def liste(uid):
         return __jsonServerErrorResponse()
     data = []
     cur = con.cursor()
-    for row in cur.execute('SELECT id, name FROM user_data ORDER BY saved_at'):
+    cur.execute('SELECT id, name FROM user_data WHERE uid = ? ORDER BY saved_at', (uid,))
+    for row in cur:
         data.append({'id' : row[0], 'name': row[1]})
     con.close()
 

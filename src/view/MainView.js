@@ -171,6 +171,23 @@ class MainView extends React.Component {
     }, this.addHistory);
   }
 
+  onClickOut = (event) => {
+    if('container' === event.target.className){
+      this.setState( state => {
+        let points = state.points.concat([]);      
+        for(let idx in points){
+          points[idx].isSelected = false;          
+        }
+        this.panel.current.handleSelectPoint();
+        return {
+          points: points,
+          ai: state.ai,
+          current: null
+        };
+      }, this.addHistory);
+    }
+  }
+
   getPointById = (id) => {
     for(let idx in this.state.points){
       if(this.state.points[idx].id === id){
@@ -269,7 +286,7 @@ class MainView extends React.Component {
 
           <Row style={{height: '100%'}}>
             <Col md={9} className='editor'>
-              <div id="container" className="container" style={{ backgroundImage: this.state.background }}>             
+              <div id="container" className="container" style={{ backgroundImage: this.state.background }} onClick={this.onClickOut}>             
                 {this.state.points.map(item => (
                   <Point id={item.id} key={item.id} onClick={this.onClick} data={item} onMove={this.onMove} />
                 ))}                      

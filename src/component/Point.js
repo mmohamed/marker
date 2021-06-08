@@ -24,8 +24,14 @@ class Point extends React.Component {
         this.handleOnMouseLeave = this.handleOnMouseLeave.bind(this);
     }
 
-    handleClick = (event) => {        
-        this.props.onClick(this.props.id);
+    handleClick = (event) => {   
+        if(event.detail === 2){
+            this.setState({
+                show: true
+            });
+        }else{
+            this.props.onClick(this.props.id);
+        }
     }
 
     handleDrop = (event) => {
@@ -35,7 +41,7 @@ class Point extends React.Component {
         }
         let newX = event.layerX-event.offsetX;
         let newY = event.layerY-event.offsetY;
-        if(Math.abs(newX-this.state.x) < 3 &&  Math.abs(newY-this.state.y) < 3){
+        if(Math.abs(newX-this.state.x) < 5 && Math.abs(newY-this.state.y) < 5){
             // ignore it, probably click move
             return;
         }
@@ -51,9 +57,11 @@ class Point extends React.Component {
     }
 
     handleOnMouseEnter = (event) => {
-        this.setState({
-            show: true
-        });
+        if(this.props.showOnHover){
+            this.setState({
+                show: true
+            });
+        }
     }
 
     handleOnMouseLeave = (event) => {
@@ -98,12 +106,14 @@ Point.propTypes = {
     onClick: PropTypes.func.isRequired,
     onMove: PropTypes.func.isRequired,
     id: PropTypes.number.isRequired,
+    showOnHover: PropTypes.bool
 };
 
 Point.defaultProps = {
     data: {
         x: 0, y: 0, title: '', logo: '', content: '', id: 0, links: []
-    }
+    },
+    showOnHover : false
 };
 
 export default Point;
