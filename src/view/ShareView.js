@@ -27,15 +27,15 @@ class ShareView extends React.Component{
                         this.setState({id: data.id, background: data.background, points: data.points}, () => {
                         });                    
                     }else{
-                        console.debug('Loading file error, please try again...');
+                        console.debug('[LO-0] Loading file error, please try again...');
                     }                   
                 },
                 (error) => {
-                    console.debug('Loading file error, please try again...1');
+                    console.debug('[LO-1] Loading file error, please try again...');
                 }
             );            
         }catch{
-            console.debug('Loading file error, please try again...2');
+            console.debug('[LO-2] Loading file error, please try again...');
         }        
     }
 

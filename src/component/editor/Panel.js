@@ -179,6 +179,10 @@ class Panel extends React.Component {
         });
     }
 
+    handleUserLogout = () => {
+        this.handleConfirmClear();
+    }
+
     setCanUndo = (status) => {
         this.setState({canUndo: status});
     }
@@ -239,15 +243,12 @@ class Panel extends React.Component {
     }
 
     handleConfirmClear = () => {
+        window.location.hash = '';  
         this.props.clear(() => {
             this.setState({currentFile: null, filename: '', cantExport: true}, () => {
                 this.user.current.setCurrentFilename(null);
                 this.user.current.setCurrentFileSavedAt(null);
-                this.props.clear(() => {
-                    window.location.hash = '';   
-                }); 
-            });
-            window.location.hash = '';   
+            });             
         }); 
     }
 
@@ -306,7 +307,7 @@ class Panel extends React.Component {
             <>                   
                 <FileList ref={this.openModal} onDelete={this.handleDeleteFile} onOpen={this.handleOpenFile} />                
 
-                <User ref={this.user} onLoaded={this.handleUserLoad}/>
+                <User ref={this.user} onLoaded={this.handleUserLoad} onLogout={this.handleUserLogout}/>
                 <hr/>
                 
                 <Form>

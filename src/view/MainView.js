@@ -28,10 +28,6 @@ class MainView extends React.Component {
     this.historyService = new HistoryService(localStorage);
   }
 
-  UNDO_KEY = 90;
-  REDO_KEY = 89;
-  SAVE_KEY = 83;
-
   handleKeyDown = (event) => {     
     if (event.ctrlKey || event.metaKey) {
       switch (String.fromCharCode(event.which).toLowerCase()) {

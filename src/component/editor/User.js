@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Row, Col, Spinner, Button } from 'react-bootstrap';
 import Keycloak from 'keycloak-js';
 import PropTypes from 'prop-types';
+import { confirmAlert } from 'react-confirm-alert';
 import ReactTimeAgo from 'react-time-ago'
 import TimeAgo from 'javascript-time-ago'
 import en from 'javascript-time-ago/locale/en'
@@ -62,7 +63,7 @@ class User extends Component {
     getUID() {
         return this.state.uid;
     }
-getToken
+    
     setCurrentFilename(currentFilename) {
         if(!currentFilename){
             currentFilename = 'not saved yet ...';
@@ -74,7 +75,31 @@ getToken
         this.setState({currentFileSavedAt: currentFileSavedAt});
     }
 
-    logout() {
+    handleLogout = (event) => {
+        confirmAlert({
+            customUI: ({ onClose }) => {
+                return (
+                    <div className='custom-ui'>
+                        <h1>Are you sure to logout?</h1>
+                        <button onClick={onClose}>No</button>
+                        <button
+                        onClick={() => {
+                            this.handleLogoutClear();
+                            onClose();
+                        }}
+                        >
+                        Yes
+                        </button>
+                    </div>
+                );
+            }
+        });               
+    }
+
+    handleLogoutClear = () => {
+        if(typeof this.props.onLogout === 'function'){
+            this.props.onLogout();                        
+        }
         this.state.keycloak.logout();
     }
 
@@ -84,7 +109,12 @@ getToken
             if(this.state.authenticated) return (
                 <Row>
                     <Col md={2}>
-                        <Button variant="primary" className="btn-circle btn-md" style={{fontSize: '18px', fontWeight: 'bold'}} onClick={ () => this.logout() }>AD</Button>
+                        <Button 
+                            variant="primary" 
+                            className="btn-circle btn-md" 
+                            style={{fontSize: '18px', fontWeight: 'bold'}} 
+                            onClick={ () => this.handleLogout() }
+                        >{this.state.username.substr(0, 2).toUpperCase()}</Button>
                     </Col>
                     <Col md={10} style={{ lineHeight: '25px'}}>
                         Welcome {this.state.username} 
@@ -108,7 +138,8 @@ getToken
 }
 
 User.propTypes = {
-    onLoaded: PropTypes.func
+    onLoaded: PropTypes.func,
+    onLogout: PropTypes.func
 }
 
 export default User;
