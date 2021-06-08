@@ -81,7 +81,6 @@ class Panel extends React.Component {
                     this.setState({currentFile: {id: data.message, name: this.state.filename}, cantExport: false }, () => {
                         this.handleCancelSave();
                         this.handleUserLoad(null, null, true);
-                        console.debug(this.state);
                     });                    
                     this.user.current.setCurrentFilename(this.state.filename);
                     this.user.current.setCurrentFileSavedAt(new Date());
