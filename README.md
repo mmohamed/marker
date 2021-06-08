@@ -1,8 +1,10 @@
 # Marker for interactive board
 Add a pop markers to your boards for communication.
 
-<img src="docs/example.png" width="49%">
-<img src="docs/example-share.png" width="49%">
+<p>
+  <img src="docs/example.png" width="49%">
+  <img src="docs/example-share.png" width="49%">
+</p>
 
 ## 1- Deploy KeyCloak for SSO:
   * [Local standalone for testing / developpement](https://www.keycloak.org/docs/latest/server_installation/) 
