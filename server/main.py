@@ -149,7 +149,7 @@ def __connect():
 
 def __startup():
     # load env config file (.env)
-    if not os.environ.get('NODEBUG'):
+    if None == os.environ.get('NODEBUG'):
         print('Env file loaded')
         load_dotenv()
 
@@ -197,4 +197,4 @@ def __auth(request, uid):
 
 if __name__ == '__main__':
     __startup()
-    api.run(host='0.0.0.0', debug=(None != os.environ.get('NODEBUG')))
+    api.run(host='0.0.0.0', debug=(None == os.environ.get('NODEBUG')))

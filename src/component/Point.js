@@ -29,10 +29,20 @@ class Point extends React.Component {
     }
 
     handleDrop = (event) => {
-        this.props.onMove(this.props.id, event.layerX-event.offsetX, event.layerY-event.offsetY);
+        if (!(event instanceof MouseEvent)){
+            // valid event
+            return;
+        }
+        let newX = event.layerX-event.offsetX;
+        let newY = event.layerY-event.offsetY;
+        if(Math.abs(newX-this.state.x) < 3 &&  Math.abs(newY-this.state.y) < 3){
+            // ignore it, probably click move
+            return;
+        }
+        this.props.onMove(this.props.id, newX, newY);       
         this.setState({
-            x: event.layerX-event.offsetX, 
-            y: event.layerY-event.offsetY
+            x: newX, 
+            y: newY
         });
     }
 

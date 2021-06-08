@@ -33,19 +33,23 @@ class MainView extends React.Component {
   SAVE_KEY = 83;
 
   handleKeyDown = (event) => {     
-    switch(event.keyCode) {
-        case this.SAVE_KEY:   
+    if (event.ctrlKey || event.metaKey) {
+      switch (String.fromCharCode(event.which).toLowerCase()) {
+      case 's':
           event.preventDefault();
           this.panel.current.handleExecuteSave();
           break;
-        case this.UNDO_KEY:   
-          this.undo();           
+      case 'z':
+          event.preventDefault();
+          this.undo();
           break;
-        case this.REDO_KEY:              
+      case 'y':
+          event.preventDefault();
           this.redo();
           break;
-        default: 
-          break;
+      default:
+        break;
+      }
     }
   }
 
